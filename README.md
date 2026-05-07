@@ -57,6 +57,20 @@ vertices are radially contracted. In the second phase, pairs of vertices are
 folded/rotated into a new configuration. At each frame, all pairwise connecting
 lines are drawn.
 
+---
+
+### Chladni Eigenmodes
+
+Generate random shapes with a random hole, triangulate the shape, solve the FEM Laplace problem and visualize a given eigenmode.
+
+<p float="left">
+  <img src="chladni_eigenmodes/output/mode_17.png" width="300"/>
+  <img src="chladni_eigenmodes/output/mode_18.png" width="300"/>
+  <img src="chladni_eigenmodes/output/mode_55.png" width="300"/>
+  <img src="chladni_eigenmodes/output/mode_58.png" width="300"/>
+  <img src="chladni_eigenmodes/output/mode_60.png" width="300"/>
+  <img src="chladni_eigenmodes/output/mode_64.png" width="300"/>
+</p>
 
 ---
 
@@ -71,6 +85,9 @@ magnetic_pendulum/
 
 polygon_folding/
     script for folding and unfolding of even regular polygons
+
+chladni_eigenmodes/
+  script for generation and triangulation of random shapes + FEM solver
 
 ```
 
@@ -96,6 +113,10 @@ python magnetic_pendulum/plot_pendulum.py pendulum_01
 ```bash
 python polygon_folding/polygon_folding.py
 ```
+
+### Chladni Eigenmodes
+
+see `chladni_eigenmodes/README.md`
 
 ---
 
