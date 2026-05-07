@@ -46,6 +46,18 @@ A structured variant with controlled step scaling and spatial layout.
 Simulation of a damped pendulum in a multi-attractor field.
 Each pixel corresponds to the attractor reached from a given initial condition.
 
+### Polygon Folding
+
+<p float="left">
+  <img src="polygon_folding/output/animation.webp" width="300"/>
+</p>
+
+The animation starts from points on a regular n-gon. In the first phase, the odd
+vertices are radially contracted. In the second phase, pairs of vertices are
+folded/rotated into a new configuration. At each frame, all pairwise connecting
+lines are drawn.
+
+
 ---
 
 ## Project Structure
@@ -56,6 +68,9 @@ angular_random_walk/
 
 magnetic_pendulum/
     simulation + visualization of attractor basins
+
+polygon_folding/
+    script for folding and unfolding of even regular polygons
 
 ```
 
@@ -76,11 +91,17 @@ python magnetic_pendulum/render_pendulum.py
 python magnetic_pendulum/plot_pendulum.py pendulum_01
 ```
 
+### Polygon Folding
+
+```bash
+python polygon_folding/polygon_folding.py
+```
+
 ---
 
 ## Notes
 
-* Outputs are intentionally stochastic → results vary per run
+* Some outputs are intentionally stochastic → results vary per run
 * High-resolution outputs are not committed to keep the repo lightweight
 * The gallery contains curated examples
 
