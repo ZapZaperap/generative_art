@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="chladni_eigenmodes/output/generative_art_fem_modes_900_940.png" width="80%"/>
+</p>
+
 # Generative Art Experiments
 
 
