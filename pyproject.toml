@@ -12,4 +12,5 @@ dependencies = [
     "pillow==12.2.0",
     "pycairo==1.29.0",
     "scipy==1.17.1",
+    "shapely==2.1.2",
 ]
