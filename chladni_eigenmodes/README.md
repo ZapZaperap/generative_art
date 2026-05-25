@@ -1,6 +1,14 @@
 # FEM Eigenmode Solver
 
-This directory contains two standalone scripts for generating random shapes with holes and solving finite element eigenmode problems:
+This directory contains scripts and a reusable Python package for generating random shapes with holes and solving finite element eigenmode problems:
+
+## Structure
+
+- `random_shape.py`: Generate randomized shapes with holes and triangulate them using Gmsh.
+- `fem_solver.py`: Load a mesh file, solve the FEM eigenvalue problem, and plot eigenmodes.
+- `fem_plot.py`: Additional plotting utilities for FEM results.
+- `src/chladni_eigenmodes/`: Reusable Python package with utilities for mesh handling, FEM, and text-to-geometry conversion.
+- `output/`: Contains generated meshes and simulation results.
 
 ## Scripts
 

@@ -1,12 +1,15 @@
 # Generative Art Experiments
 
+
 A collection of generative art projects exploring stochastic processes, geometric constructions, and physical simulations.
 
 This repository focuses on:
 
-* Random walk–based pattern generation
+* Random walkbased pattern generation
 * Geometric transformations (arcs, lattices)
 * Physics-inspired simulations (magnetic pendulum attractors)
+* Finite element eigenmode solvers for random shapes
+* Polygon folding and geometric animations
 
 ---
 
@@ -74,22 +77,32 @@ Generate random shapes with a random hole, triangulate the shape, solve the FEM 
 
 ---
 
+
 ## Project Structure
 
 ```bash
-angular_random_walk/
-    scripts for geometric random walk patterns
-
-magnetic_pendulum/
-    simulation + visualization of attractor basins
-
-polygon_folding/
-    script for folding and unfolding of even regular polygons
-
-chladni_eigenmodes/
-  script for generation and triangulation of random shapes + FEM solver
-
+angular_random_walk/           # Geometric random walk pattern scripts and outputs
+magnetic_pendulum/             # Magnetic pendulum simulation and visualization
+polygon_folding/               # Polygon folding/unfolding scripts and outputs
+chladni_eigenmodes/            # FEM eigenmode solver, random shape generator, outputs
+  src/chladni_eigenmodes/    # Reusable Python package (installable)
+  output/                    # Meshes and simulation results
+pyproject.toml                 # Project metadata and dependencies
+requirements.txt               # Core Python dependencies
+README.md                      # Project overview and instructions
 ```
+
+---
+
+## Installation (Reusable Code)
+
+To install the reusable Python code in `src/` (e.g., for use in your own scripts or notebooks), run:
+
+```bash
+pip install -e .
+```
+
+This will install the `chladni_eigenmodes` package in editable mode.
 
 ---
 
@@ -114,9 +127,10 @@ python magnetic_pendulum/plot_pendulum.py pendulum_01
 python polygon_folding/polygon_folding.py
 ```
 
+
 ### Chladni Eigenmodes
 
-see `chladni_eigenmodes/README.md`
+See `chladni_eigenmodes/README.md` for details and usage.
 
 ### Text to Gmsh
 
