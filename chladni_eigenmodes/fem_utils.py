@@ -5,6 +5,7 @@ import tempfile
 import os
 from pathlib import Path
 from skfem import MeshTri
+import matplotlib.pyplot as plt
 
 
 def meshio_to_points_triangles(m):
@@ -96,3 +97,25 @@ def load_skfem_mesh_from_hdf5(filename):
     points = np.ascontiguousarray(data["points"].T)
     triangles = np.ascontiguousarray(data["triangles"].T)
     return MeshTri(points, triangles)
+
+def plot_mesh(m, lines=True, triangles=True, points=True):
+    """
+    Plot a meshio mesh object.
+
+    Parameters
+    ----------
+    m : meshio.Mesh
+        Mesh to plot
+    """
+    _, ax = plt.subplots()
+    if points:
+        ax.scatter(m.points[:, 0], m.points[:, 1], s=1)
+    if "line" in m.cells_dict and lines:
+        for l in m.cells_dict["line"]:
+            ax.plot(m.points[l, 0], m.points[l, 1], "k-", lw=0.5)
+    if "triangle" in m.cells_dict and triangles:
+        for t in m.cells_dict["triangle"]:
+            ax.plot(m.points[t[[0, 1, 2, 0]], 0], m.points[t[[0, 1, 2, 0]], 1], "r-", lw=0.5)
+
+    ax.set_aspect("equal")
+    plt.show()
