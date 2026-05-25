@@ -9,7 +9,7 @@ A collection of generative art projects exploring stochastic processes, geometri
 
 This repository focuses on:
 
-* Random walkbased pattern generation
+* Random walk-based pattern generation
 * Geometric transformations (arcs, lattices)
 * Physics-inspired simulations (magnetic pendulum attractors)
 * Finite element eigenmode solvers for random shapes
