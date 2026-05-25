@@ -118,6 +118,18 @@ python polygon_folding/polygon_folding.py
 
 see `chladni_eigenmodes/README.md`
 
+### Text to Gmsh
+
+```bash
+python text_to_gmsh.py "HELLO" --x-scale 0.90 --underline --output output/hello.geo
+```
+
+Optionally generate a mesh if `gmsh` is installed:
+
+```bash
+python text_to_gmsh.py "HELLO" --x-scale 0.90 --underline --output output/hello.geo --mesh
+```
+
 ---
 
 ## Notes
