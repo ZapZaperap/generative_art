@@ -23,6 +23,9 @@ def meshio_to_points_triangles(m):
     points = m.points[used, :2]
     triangles = new_index[triangles]
 
+    points = np.ascontiguousarray(points)
+    triangles = np.ascontiguousarray(triangles)
+
     return points, triangles
 
 
