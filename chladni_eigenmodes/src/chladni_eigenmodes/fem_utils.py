@@ -6,7 +6,12 @@ import os
 from pathlib import Path
 from skfem import MeshTri
 import matplotlib.pyplot as plt
+from matplotlib import tri
 
+from shapely.geometry import Polygon
+from shapely.geometry import Point, LineString
+from shapely.ops import polygonize, unary_union, nearest_points
+from shapely.prepared import prep
 
 def meshio_to_points_triangles(m):
     """Convert meshio mesh to points and triangles arrays."""
@@ -122,3 +127,175 @@ def plot_mesh(m, lines=True, triangles=True, points=True):
 
     ax.set_aspect("equal")
     plt.show()
+
+class EigenmodePotentialField:
+    """
+    Piecewise-linear representation of an eigenmode over a mesh, with precomputed
+    triangle coefficients and gradient data for the potential V = |psi|^2.
+    """
+    #TODO: Unify with definition in particle_simulations.ipynb and move to a common module
+    def __init__(self, points, triangles, eigenvector):
+        self.points = points
+        self.triangles = triangles
+        self.eigenvector = eigenvector
+        self.V = np.abs(self.eigenvector) ** 2
+
+        self.triang = tri.Triangulation(points[:, 0], points[:, 1], triangles)
+        self.trifinder = self.triang.get_trifinder()
+        self.triangle_data = self._precompute_triangle_data()
+
+    def _precompute_triangle_data(self):
+        data = []
+        for tri_indices in self.triangles:
+            p = self.points[tri_indices]
+            psi = self.eigenvector[tri_indices]
+
+            A = np.column_stack([np.ones(3), p[:, 0], p[:, 1]])
+            a, b, c = np.linalg.solve(A, psi)
+
+            data.append({
+                "coeff": np.array([a, b, c]),
+                "grad_psi": np.array([b, c]),
+            })
+
+        return data
+
+    def _find_triangle(self, x, y):
+        return self.trifinder(x, y)
+
+    def psi_at(self, x, y):
+        tri_idx = self._find_triangle(x, y)
+        if tri_idx == -1:
+            return 0.0
+
+        a, b, c = self.triangle_data[tri_idx]["coeff"]
+        return a + b * x + c * y
+
+    def gradient(self, x, y):
+        tri_idx = self._find_triangle(x, y)
+        if tri_idx == -1:
+            return np.zeros(2)
+
+        psi_xy = self.psi_at(x, y)
+        grad_psi = self.triangle_data[tri_idx]["grad_psi"]
+        return 2 * np.real(np.conj(psi_xy) * grad_psi)
+
+    def force_at(self, x, y):
+        return -self.gradient(x, y)
+
+class MeshDomain:
+    def __init__(self, geometry):
+        """
+        geometry: shapely Polygon or MultiPolygon.
+        May contain holes.
+        """
+        self.geometry = geometry
+        self.boundary = geometry.boundary
+        self.prepared = prep(geometry)
+        self.minx, self.miny, self.maxx, self.maxy = geometry.bounds
+
+    def contains(self, p):
+        return self.prepared.contains(Point(float(p[0]), float(p[1])))
+
+    def signed_distance(self, p):
+        point = Point(float(p[0]), float(p[1]))
+        d = point.distance(self.boundary)
+
+        if self.prepared.contains(point):
+            return d
+        else:
+            return -d
+
+    def sample(self, n):
+        pts = []
+        while len(pts) < n:
+            p = np.array([
+                np.random.uniform(self.minx, self.maxx),
+                np.random.uniform(self.miny, self.maxy),
+            ])
+            if self.contains(p):
+                pts.append(p)
+
+        return np.array(pts)
+
+    def nearest_boundary_direction(self, p):
+        """
+        Returns approximate inward normal direction using nearest boundary point.
+        """
+        point = Point(float(p[0]), float(p[1]))
+        _, nearest = nearest_points(point, self.boundary)
+
+        q = np.array([nearest.x, nearest.y])
+        v = np.asarray(p) - q
+        norm = np.linalg.norm(v)
+
+        if norm < 1e-12:
+            return np.zeros(2)
+
+        # If p is inside, v points inward away from boundary.
+        # If p is outside, -v usually points back toward boundary/interior.
+        if self.contains(p):
+            return v / norm
+        else:
+            return -v / norm
+
+    def draw(self, ax):
+        """
+        Draw polygon / multipolygon including holes.
+        """
+
+        geometries = getattr(self.geometry, "geoms", [self.geometry])
+
+        for geom in geometries:
+
+            # Outer boundary
+            x, y = geom.exterior.xy
+            ax.plot(x, y, color="black")
+
+            # Holes
+            for interior in geom.interiors:
+                xh, yh = interior.xy
+                ax.plot(xh, yh, color="black")
+
+        ax.set_aspect("equal")
+
+        pad_x = 0.05 * (self.maxx - self.minx)
+        pad_y = 0.05 * (self.maxy - self.miny)
+
+        ax.set_xlim(self.minx - pad_x, self.maxx + pad_x)
+        ax.set_ylim(self.miny - pad_y, self.maxy + pad_y)
+
+def load_domain_from_msh(filename, simplify_tol=0.0):
+    mesh = meshio.read(filename)
+    points = mesh.points[:, :2]
+
+    triangles = []
+    for cell_block in mesh.cells:
+        if cell_block.type == "triangle":
+            triangles.append(cell_block.data)
+
+    if not triangles:
+        raise ValueError("No triangle cells found in mesh.")
+
+    triangles = np.vstack(triangles)
+
+    tri_polygons = []
+    for tri in triangles:
+        coords = points[tri]
+        poly = Polygon(coords)
+
+        if poly.is_valid and poly.area > 0:
+            tri_polygons.append(poly)
+
+    if not tri_polygons:
+        raise RuntimeError("No valid triangle polygons constructed.")
+
+    geometry = unary_union(tri_polygons)
+
+    if simplify_tol > 0:
+        geometry = geometry.simplify(simplify_tol, preserve_topology=True)
+
+    if not geometry.is_valid:
+        geometry = geometry.buffer(0)
+
+    return MeshDomain(geometry)
